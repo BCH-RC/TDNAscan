@@ -10,26 +10,57 @@ TDNAscan has been tested on the following Linux distributions:
 * Debian 7 "Wheezy"
 * Debian 8 "Jessie"
 
-## Install from Source
-
-1. Run: `git clone` (or download tdnascan.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
-2. Run: `sudo ./Install.sh`
-3. If prompted with "Would you like to configure as much as possible automatically? [yes]", type **yes** and then press Enter. This will automatically configure Perl's CPAN utility so that additional Perl modules can be installed.
-4. If prompted with "Would you like me to automatically choose some CPAN mirror sites for you? [yes]", type **yes** and then press Enter.  This will automatically configure Perl's CPAN utility with a mirror site from which it can download Perl modules.
-
-**Optional** - If you would like to enable visualization of the results, continue with steps 5 - 7:
-
-5. Run: `echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc`
-6. Run: `. ~/.bashrc`
-7. Run `circos -modules` to verify that all Perl modules that are required to run Circos for visualizations are installed. If any are reported as missing, you must install them before attempting to visualize FNBTools results.
-    * A helper script called `ReinstallCircosPerlModules.sh` has been provided to assist with installing Perl modules that fail to install during the main installation.
-    * Run: `sudo ./ReinstallCircosPerlModules.sh` to re-attempt to install missing Perl modules that Circos requires.
-
+## Software dependencies
+The following programs need to be installed and the executable commands should be in $PATH of system.
+* BWA (Version ="0.7.12")
+* Samtools (Version ="1.3.1")
+* Python (Version ="2.7.5")
 
 
 # Using TDNAscan 
+### Usage: 
+
+`python tdnascan.py -1 forward.fq -2 reverse.fq -t t-dna.fa -g ref_genome.fa -p tdna`
+
+### Parameters:
+
+* REQUIRED -1 the paired read file 1
+* REQUIRED -2 the paired read file 2
+* REQUIRED -t the T-DNA sequence file in fasta format
+* REQUIRED -g the genome sequence file in fasta format
+* REQUIRED -p the name of your project (output files will be placed in a directory with the name you provide)
+* OPTIONAL:
+	* -@ cpu number for BWA and SAMTOOLS [default 8]
+
+### Example:
+
+An example data set is provided with this repository.
+
+Running the following example code will create a project directory named 'tdna' relative to where you run the command, and will produce example output:
+
+`python tdnascan.py -1 mt4_chr1_20x_mut_tdna_1.fq -2 mt4_chr1_20x_mut_tdna_2.fq -t t-dna_elison.fa -g mt4_chr1_2Mb.fa -p tdna`
+
+### Output:
+#### 1. BED file
+TDNAscan produces a single BED file which contains all unique deletions that were identified.
+
+The output is placed in ./tdna (i.e. in the directory named after your project)
+
+Running the above example code would produce the following BED file:
+
+* ./tdna/**tdna_insertion.bed**
+
+#### Output file structure
+
+* Chr: Chromosome number;	
+* Breakpoint: Start position of insertions;
+* SuppRead: CLR represents the clipped reads number; DIR represents discordant reads number;
+* SuppRead: tdna_st and tdna_end represent the start and end position of T-DNA sequence truncated when inserted to reference genome.
+* Orientation: forward or reverse T-DNA inserted to reference genome;
+* Freq: Insertion frequency;
+* Genes (optional): This column will only show genes if deletions cover.
 
 # Contact
 
-* Dr. Liang Sun    lsun@noble.org
-* Yinbing    ybge@noble.org
+* Dr. Liang Sun    (lsun@noble.org)
+* Yinbing  Ge  (ybge@noble.org)
