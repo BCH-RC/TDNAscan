@@ -10,7 +10,7 @@ TDNAscan has been tested on the following Linux distributions:
 * Debian 7 "Wheezy"
 * Debian 8 "Jessie"
 
-## Software dependencies
+## Software Dependencies
 The following programs need to be installed and the executable commands should be in $PATH of system.
 * BWA (Version ="0.7.12")
 * Samtools (Version ="1.3.1")
@@ -50,7 +50,7 @@ Running the above example code would produce the following BED file:
 
 * ./tdna/**tdna_insertion.bed**
 
-#### Output file structure
+#### 2. Output file structure
 
 * Chr: Chromosome number;	
 * Breakpoint: Start position of insertions;
@@ -63,4 +63,4 @@ Running the above example code would produce the following BED file:
 # Contact
 
 * Dr. Liang Sun    (lsun@noble.org)
-* Yinbing  Ge  (ybge@noble.org)
+* Yinbing  Ge  (yinge@noble.org)
