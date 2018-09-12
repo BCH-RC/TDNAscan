@@ -466,11 +466,12 @@ def clusterIR(informativeGenome,insertionRead):
             
 
 def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory):
-    insertionBED = directory+ "/"+directory+"_insertionBED.txt"
+    insertionBED = directory+ "/"+directory+"_insertion.bed"
     insertionSeq = directory+ "/insertionSeq.fa"
     outfile = directory+ "/insertion"
     seq_win = 500
     with open(insertionBED,"w") as file_bed:
+        file_bed.write("Chr\tBreakpoint\tSuppRead\tTDNA_info\tOrientation\tFreq\n")
         seq_region = ""
         for (chr,pos_mode,suppRead,tdna_info,orientation_mode) in insertionbag:
             seq_region = seq_region + ' "'+chr+":" + str((pos_mode-seq_win))+"-" + str((pos_mode+seq_win))+ '"'
