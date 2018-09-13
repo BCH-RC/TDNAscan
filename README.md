@@ -17,7 +17,10 @@ The following programs need to be installed and the executable commands should b
 * Python (Version ="2.7.5")
 
 
-# Using TDNAscan 
+# Using TDNAscan
+
+##Step 1 - Identify complete and truncated T-DNA insertions
+  
 ### Usage: 
 
 `python tdnascan.py -1 forward.fq -2 reverse.fq -t t-dna.fa -g ref_genome.fa -p tdna`
@@ -40,8 +43,26 @@ Running the following example code will create a project directory named 'tdna' 
 
 `python tdnascan.py -1 mt4_chr1_20x_mut_tdna_1.fq -2 mt4_chr1_20x_mut_tdna_2.fq -t t-dna_elison.fa -g mt4_chr1_2Mb.fa -p tdna`
 
+##Step 2 - Annotate complete and truncated T-DNA insertions
+
+### Usage: 
+
+`python tdnaAnnot.py -i tdna_insertion.bed -f ref.gff3 -o tdna_insertion_annot.bed`
+
+### Parameters:
+
+* REQUIRED -i T-DNA BED file
+* REQUIRED -f gff3 annotation file
+* REQUIRED -o annotated insertion file
+
+### Example:
+
+`python tdnaAnnot.py -i tdna40x/tdna40x_insertionBED.txt -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/**tdna_insertion_annot.bed`
+
+
 ### Output:
-#### 1. BED file
+
+### BED file
 TDNAscan produces a single BED file which contains all unique deletions that were identified.
 
 The output is placed in ./tdna (i.e. in the directory named after your project)
@@ -50,7 +71,11 @@ Running the above example code would produce the following BED file:
 
 * ./tdna/**tdna_insertion.bed**
 
-#### 2. Output file structure
+Annotated BED file:
+
+* ./tdna/**tdna_insertion_annot.bed**
+
+### Output file structure
 
 * Chr: Chromosome number;	
 * Breakpoint: Start position of insertions;
@@ -59,6 +84,7 @@ Running the above example code would produce the following BED file:
 * Orientation: forward or reverse T-DNA inserted to reference genome;
 * Freq: Insertion frequency;
 * Genes (optional): This column will only show genes if deletions cover.
+
 
 # Contact
 
