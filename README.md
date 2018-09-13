@@ -19,7 +19,7 @@ The following programs need to be installed and the executable commands should b
 
 # Using TDNAscan
 
-##Step 1 - Identify complete and truncated T-DNA insertions
+## Step 1 - Identify complete and truncated T-DNA insertions
   
 ### Usage: 
 
@@ -43,7 +43,7 @@ Running the following example code will create a project directory named 'tdna' 
 
 `python tdnascan.py -1 mt4_chr1_20x_mut_tdna_1.fq -2 mt4_chr1_20x_mut_tdna_2.fq -t t-dna_elison.fa -g mt4_chr1_2Mb.fa -p tdna`
 
-##Step 2 - Annotate complete and truncated T-DNA insertions
+## Step 2 - Annotate complete and truncated T-DNA insertions
 
 ### Usage: 
 
