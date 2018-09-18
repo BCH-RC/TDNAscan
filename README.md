@@ -35,7 +35,7 @@ The following programs need to be installed and the executable commands should b
 * OPTIONAL:
 	* -@ cpu number for BWA and SAMTOOLS [default 8]
 	* -a the window size of clustering soft clipped reads [default:3]
-	* -b the length of DNA fragment in NGS data [default:500]
+	* -b the length of library fragment in NGS data [default:500]
 
 ### Example:
 
