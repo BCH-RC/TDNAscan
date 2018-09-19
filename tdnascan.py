@@ -79,6 +79,7 @@ def align2genome(R1,R2,genome,outfile,thread,directory):
     #samtools index informativeMt4_sort.bam
     # bwa index genome data?????????????????????????????????
     cmd0 = "cp "+genome+" "+directory
+    genome = os.path.basename(genome)
     genome = directory + "/" + genome
     cmd1 = "bwa index "+ genome
     cmd2 = "bwa mem -T 20 -t "+ str(thread) +" "+ genome + " " + R1 + " "+ R2 + " >"+outfile+".sam"
@@ -324,7 +325,7 @@ def analyzeClust(clustbag):
     insertionTDNA = (chromosome,pos_mode,suppRead,tdna_info,orientation_mode)
     return insertionTDNA
 
-def clusterIR(informativeGenome,insertionRead):
+def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
     informativeGenomeSAM = informativeGenome + ".sam"
     # FileIN = open(informativeGenomeSAM,"r") # open sam file
     # FileOUT = open(insertionRead,"w")
@@ -407,11 +408,14 @@ def clusterIR(informativeGenome,insertionRead):
             #print (chr,start,readType,tdna_pos,orientation)
             FileOUT.write(str((chr,start,readType,tdna_direction,tdna_pos,orientation))+"\n")
             if winflag:
-                win = 500
+                #win = 500
+                win = winDIR
             elif readType == "CLR":
-                win = 5
+                #win = 5
+                win = winCLR
             elif readType == "DIR":
-                win = 500
+                #win = 500
+                win = winDIR
             if not clustbag:
                 bag1 = (chr,start,readType,tdna_direction,tdna_pos,orientation)
                 clustbag.append((chr,start,readType,tdna_direction,tdna_pos,orientation))
@@ -430,7 +434,7 @@ def clusterIR(informativeGenome,insertionRead):
                     t_start = insertionTDNA[3].split(",")[0].split(":")[1]
                     t_end = insertionTDNA[3].split(",")[1].split(":")[1]
                     if t_start != "-" and t_end != "-":
-                        if (clr_n + dir_n) >=3:
+                        if (clr_n + dir_n) >=minRD:
                             insertionbag.append(insertionTDNA)
                     # if t_start == "-" or t_end == "-":
                     #     if (clr_n + dir_n) >=3:
@@ -455,7 +459,7 @@ def clusterIR(informativeGenome,insertionRead):
         t_end = insertionTDNA[3].split(",")[1].split(":")[1]
 
         if t_start != "-" and t_end != "-":
-            if (clr_n + dir_n) >=3 : #and (t_end-t_start)>=25
+            if (clr_n + dir_n) >=minRD : #and (t_end-t_start)>=25
                 insertionbag.append(insertionTDNA)
         # #     FileOUT1.write(insertionTDNA[0]+"\t"+str(insertionTDNA[1])+"\t"+"\t".join(insertionTDNA[2:5])+"\n")
     tmp_reads.close()
@@ -531,7 +535,10 @@ if __name__ == '__main__':
     parser.add_argument('-t', action='store', dest='tdna_seq', help="t-DNA sequence file",required=True)
     parser.add_argument('-p', action='store', dest='project', help="the project name",required=True)
     parser.add_argument('-n', action='store', default='3', type=int, dest='minRD', help="the minimal total number of informative reads (clipped and discordant reads [default:3]")
+    parser.add_argument('-a', action='store', default='5', type=int, dest='winCLR', help="the window size of clustering soft clipped reads [default:3]")
+    parser.add_argument('-b', action='store', default='500', type=int, dest='winDIR', help="the length of DNA fragment in NGS data [default:500]")
     parser.add_argument('-@', action='store', default='8', type=int, dest='thread', help="default thread: 8")
+
     
     args = parser.parse_args()    
     fq1 = args.fq1
@@ -541,6 +548,8 @@ if __name__ == '__main__':
     #tfile = args.tfile
     project = args.project
     minRD = args.minRD
+    winCLR = args.winCLR
+    winDIR = args.winDIR
     thread = args.thread
     insertionbag = []
 
@@ -623,7 +632,7 @@ if __name__ == '__main__':
 
     insertionRead = directory+ "/insertionRead.txt"
     
-    insertionbag = clusterIR(informativeGenome,insertionRead)
+    insertionbag = clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR)
     
     print "Running the step5: extract sequences blast all reads to them, and identify zygosity "
     #extract reads using samtools
