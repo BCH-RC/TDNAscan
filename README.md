@@ -59,7 +59,7 @@ Running the following example code will create a project directory named 'tdna' 
 
 ### Example:
 
-`python tdnaAnnot.py -i tdna40x/tdna40x_insertionBED.txt -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/**tdna_insertion_annot.bed**`
+`python tdnaAnnot.py -i tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/**5.tdna_insertion_annot.bed**`
 
 
 ### Output:
@@ -69,13 +69,13 @@ TDNAscan produces a single BED file which contains all unique deletions that wer
 
 The output is placed in ./tdna (i.e. in the directory named after your project)
 
-Running the above example code would produce the following BED file:
+Running the above example code (Step 1) would produce the following BED file:
 
-* ./tdna/**tdna_insertion.bed**
+* ./tdna/**5.tdna_insertion.bed**
 
-Annotated BED file:
+Annotated BED file (Step 2):
 
-* ./tdna/**tdna_insertion_annot.bed**
+* ./tdna/**5.tdna_insertion_annot.bed**
 
 ### Output file structure
 
