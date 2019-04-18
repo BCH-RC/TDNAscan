@@ -416,10 +416,12 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
             elif readType == "DIR":
                 #win = 500
                 win = winDIR
+            #print "-------------windown size used:"+str(win)
             if not clustbag:
                 bag1 = (chr,start,readType,tdna_direction,tdna_pos,orientation)
                 clustbag.append((chr,start,readType,tdna_direction,tdna_pos,orientation))
             else:
+                #print (chr,start,readType,tdna_direction,tdna_pos,orientation)
                 if chr == bag1[0] and abs(start - bag1[1])<= win:
                     clustbag.append((chr,start,readType,tdna_direction,tdna_pos,orientation))
                     if readType == "DIR":
@@ -433,9 +435,9 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
                     dir_n = int(insertionTDNA[2].split(",")[1].split(":")[1])
                     t_start = insertionTDNA[3].split(",")[0].split(":")[1]
                     t_end = insertionTDNA[3].split(",")[1].split(":")[1]
-                    if t_start != "-" and t_end != "-":
-                        if (clr_n + dir_n) >=minRD:
-                            insertionbag.append(insertionTDNA)
+                    #if t_start != "-" and t_end != "-":
+                    if (clr_n + dir_n) >=minRD:
+                        insertionbag.append(insertionTDNA)
                     # if t_start == "-" or t_end == "-":
                     #     if (clr_n + dir_n) >=3:
                     #         insertionbag.append(insertionTDNA)
@@ -452,15 +454,14 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
             
         # the end of file
         insertionTDNA = analyzeClust(clustbag)
-        
         clr_n = int(insertionTDNA[2].split(",")[0].split(":")[1])
         dir_n = int(insertionTDNA[2].split(",")[1].split(":")[1])
         t_start = insertionTDNA[3].split(",")[0].split(":")[1]
         t_end = insertionTDNA[3].split(",")[1].split(":")[1]
 
-        if t_start != "-" and t_end != "-":
-            if (clr_n + dir_n) >=minRD : #and (t_end-t_start)>=25
-                insertionbag.append(insertionTDNA)
+        #if t_start != "-" and t_end != "-":
+        if (clr_n + dir_n) >=minRD : #and (t_end-t_start)>=25
+            insertionbag.append(insertionTDNA)
         # #     FileOUT1.write(insertionTDNA[0]+"\t"+str(insertionTDNA[1])+"\t"+"\t".join(insertionTDNA[2:5])+"\n")
     tmp_reads.close()
     #os.system("sort -k 3,3 -k 4,4n "+informativeGenome+"_IR.txt >"+informativeGenome+"_IR_sort.txt")
@@ -469,10 +470,10 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
         # for (chr,pos_mode,suppRead,tdna_info,orientation_mode) in insertionTDNA:
             
 
-def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory):
-    insertionBED = directory+ "/"+directory+"_insertion.bed"
-    insertionSeq = directory+ "/insertionSeq.fa"
-    outfile = directory+ "/insertion"
+def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project):
+    insertionBED = directory+ "/5."+project+"_insertion.bed"
+    insertionSeq = directory+ "/5.insertionSeq.fa"
+    outfile = directory+ "/5.insertion"
     seq_win = 500
     with open(insertionBED,"w") as file_bed:
         file_bed.write("Chr\tBreakpoint\tSuppRead\tTDNA_info\tOrientation\tFreq\n")
@@ -516,7 +517,11 @@ def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory):
                             #print line
             freq = clr_n/float(clr_n+spanread)
             #print freq
-            file_bed.write(chr+"\t"+ str(pos_mode)+"\t"+suppRead+"\t"+tdna_info+"\t"+orientation_mode+"\t"+str(freq)+"\n")
+            clr_n = int(suppRead.split(",")[0].split(":")[1])
+            if clr_n == 0:
+                file_bed.write(chr+"\t~"+ str(pos_mode)+"\t"+suppRead+"\t"+tdna_info+"\t"+orientation_mode+"\t"+str(freq)+"\n")
+            else:
+                file_bed.write(chr+"\t"+ str(pos_mode)+"\t"+suppRead+"\t"+tdna_info+"\t"+orientation_mode+"\t"+str(freq)+"\n")
             cmd7 = "rm "+tmp_file
         #os.system(cmd7) #??????????????????????????????????????????
                 
@@ -552,6 +557,7 @@ if __name__ == '__main__':
     winDIR = args.winDIR
     thread = args.thread
     insertionbag = []
+    lines = []
 
     #python tdnascan.py -1 mt4_chr1_20x_mut_tdna_1.fq -2 mt4_chr1_20x_mut_tdna_2.fq -t t-dna_elison.fa -g mt4_chr1_2Mb.fa -p tdna
     tnd_len = 10000 #10kb ??????????????????????????????
@@ -566,12 +572,18 @@ if __name__ == '__main__':
         if e.errno != errno.EEXIST:
             raise
         
-    informativeTDNA = directory+ "/TDNA"
-
+    informativeTDNA = directory+ "/1.TDNA"
+    #change the first line of T-DNA sequence
+    with open(tdna_seq) as tdna_seq_fh:
+        lines = tdna_seq_fh.readlines()
+    lines[0] = ">"+project+"\n"
+    with open (tdna_seq, "w") as tdna_seq_fh:
+        tdna_seq_fh.writelines(lines)
+    # align all reads to T-DNA sequence
     align2genome(fq1,fq2,tdna_seq,informativeTDNA,thread,directory)
     ##########################Step 2: capture all informative reads from SAM file from Step1
     print "Running the step2: capture all informative reads from SAM file from Step1 "
-    tdnaSAM = directory+ "/TDNA.sam"
+    tdnaSAM = directory+ "/1.TDNA.sam"
     TDNAname = captureTDNAname(tdna_seq)
     #captureIR_tdna("tdna_sample.sam")
     tmp_dir = "./" + project+"/tmp"
@@ -598,7 +610,7 @@ if __name__ == '__main__':
     
     filenames = glob.glob(tmp_dir +"/*.sam")
     #print filenames
-    tdnaSAM_fix = directory+ "/informativeTDNA_fix.sam"
+    tdnaSAM_fix = directory+ "/2.informativeTDNA_fix.sam"
     with open(tdnaSAM_fix,"w") as f:
         #print pool.imap(filterSam,filenames)
         for result in pool.imap(filterSam,filenames):
@@ -616,28 +628,27 @@ if __name__ == '__main__':
     print("Time for multiple processes: %ssecs" % (end_time1 - start_time1))
     
     #capture all informative reads
-    informative_genome_r1 = directory+ "/informative_genome_r1.fq"
-    informative_genome_r2 = directory+ "/informative_genome_r2.fq"
+    informative_genome_r1 = directory+ "/2.informative_genome_r1.fq"
+    informative_genome_r2 = directory+ "/2.informative_genome_r2.fq"
     
     captureIR_tdna(tdnaSAM_fix,informative_genome_r1,informative_genome_r2,TDNAname)
 
     # ##########################Step 3: map all informative reads to plant genome
     print "Running the step3: map all informative reads to plant genome "
-    #align2genome("informativeRead_1.fq","informativeRead_2.fq","mt4_chr1_2Mb.fa","informativeMt4")
-    informativeGenome = directory+ "/"+directory+"_informativeGenome"
+    informativeGenome = directory+ "/3."+project+"_informativeGenome"
     align2genome(informative_genome_r1, informative_genome_r2, reference,informativeGenome,thread,directory)
     ##########################Step 4: output all candidate insertion location and report the detail information of truncated T-DNA including how many base pairs truncated at both side of TDNA and the insertion direction
     print "Running the step4:extract informative reads and cluster all informative reads based on location "
     #clusterIR("informativeMt4.sam")
 
-    insertionRead = directory+ "/insertionRead.txt"
+    insertionRead = directory+ "/4.insertionRead.txt"
     
     insertionbag = clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR)
     
     print "Running the step5: extract sequences blast all reads to them, and identify zygosity "
     #extract reads using samtools
     
-    detectZygosity(insertionbag,fq1,fq2,reference,thread,directory)
+    detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project)
     
     #blast reads to above sequences
     
