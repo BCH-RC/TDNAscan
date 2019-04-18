@@ -59,7 +59,7 @@ Running the following example code will create a project directory named 'tdna' 
 
 ### Example:
 
-`python tdnaAnnot.py -i tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/**5.tdna_insertion_annot.bed**`
+`python tdnaAnnot.py -i tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/5.tdna_insertion_annot.bed`
 
 
 ### Output:
