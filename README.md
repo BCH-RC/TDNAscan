@@ -59,7 +59,7 @@ Running the following example code will create a project directory named 'tdna' 
 
 ### Example:
 
-`python tdnaAnnot.py -i tdna40x/tdna40x_insertionBED.txt -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/tdna_insertion_annot.bed`
+`python tdnaAnnot.py -i tdna40x/tdna40x_insertionBED.txt -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/**tdna_insertion_annot.bed`
 
 
 ### Output:
@@ -80,7 +80,7 @@ Annotated BED file:
 ### Output file structure
 
 * Chr: Chromosome number;	
-* Breakpoint: Start position of insertions;
+* Position: Start position of insertions (~ represents insertion position nearby);
 * SuppRead: CLR represents the clipped reads number; DIR represents discordant reads number;
 * SuppRead: tdna_st and tdna_end represent the start and end position of T-DNA sequence truncated when inserted to reference genome.
 * Orientation: forward or reverse T-DNA inserted to reference genome;
