@@ -515,9 +515,11 @@ def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project):
                         if int(data[3]) <= (seq_win-5) and pos >= (seq_win+5):
                             spanread = spanread + 1
                             #print line
-            freq = clr_n/float(clr_n+spanread)
+            if clr_n+spanread == 0:
+                freq = float(0)
+            else:
+                freq = clr_n/float(clr_n+spanread)
             #print freq
-            clr_n = int(suppRead.split(",")[0].split(":")[1])
             if clr_n == 0:
                 file_bed.write(chr+"\t~"+ str(pos_mode)+"\t"+suppRead+"\t"+tdna_info+"\t"+orientation_mode+"\t"+str(freq)+"\n")
             else:
