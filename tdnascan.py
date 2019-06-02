@@ -83,6 +83,7 @@ def align2genome(R1,R2,genome,outfile,thread,directory):
     genome = directory + "/" + genome
     cmd1 = "bwa index "+ genome
     cmd2 = "bwa mem -T 20 -t "+ str(thread) +" "+ genome + " " + R1 + " "+ R2 + " >"+outfile+".sam"
+    #cmd2 = "bwa mem -t "+ str(thread) +" "+ genome + " " + R1 + " "+ R2 + " >"+outfile+".sam"    
     #cmd3 = "samtools view -@  "+ str(thread) + " -buS -q 30 " + outfile+".sam |samtools sort -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
     cmd3 = "samtools view -@  "+ str(thread) + " -buS " + outfile+".sam |samtools sort -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
     cmd4 = "samtools index " + outfile+"_sort.bam"
@@ -184,49 +185,35 @@ def add2IRbag(rd1,data):
         IRbag[data[0]].calulateCigar(data[5],"R2") 
 
 def captureIR_tdna(sfile_tdna,IR1,IR2,TDNAname): #?????????????????????????parallel computing?????????????????????,tdna_name to replace t-dna_jiang
-    FileIN = open(sfile_tdna,"r") # open sam file
+    FileIN = open(sfile_tdna,"r") # open fixed/filtered sam file
     
     #IR1 = "genome_informative_r1.fq"
     #IR2 = "genome_informative_r2.fq"
     FileIR1 = open(IR1,"w")
     FileIR2 = open(IR2,"w")
-    TEMP = IR1 + "_informativeReads.sam"
-    FileOUT = open(TEMP,"w")
+    #TEMP = IR1 + "_informativeReads.sam"
+    #FileOUT = open(TEMP,"w")
     readbag = [] #store all read IDs
     read1 ="" #save the first reads
+    mapq1 = int
     flag = False
     for line in FileIN:
         if "@" in line:
             continue
         data = line.strip().split("\t")
-        # if int(data[4]) < 30:
+        # if int(data[4]) < 20:
         #     continue
         if data[0] in readbag:
             if flag:
-                FileOUT.write(line)
                 rd1 = read1.strip().split("\t")
-                # record the informative reads?????????????????????????????????????
-                add2IRbag(rd1,data) 
-                ##########write informative reads to files.
-                if data[0] in PRTDNA:
-                    continue  #skip the paired end reads which are completely mapped to TDNA
-                FileIR1.write("@"+rd1[0]+"/1\n")
-                FileIR1.write(rd1[9] + "\n+\n")
-                FileIR1.write(rd1[10]+"\n")
-                read1 = ""
-                FileIR2.write("@"+data[0]+"/2\n")
-                FileIR2.write(data[9] + "\n+\n")
-                FileIR2.write(data[10]+"\n")
-                flag = False # renew the flag variable for next paired reads
-                del readbag[:]
-            else:
-                if line.strip().find(TDNAname)>-1:
-                    FileOUT.write(line)
-                    rd1 = read1.strip().split("\t")
+                if int(data[4]) >= 20 or mapq1 >=20:
+                    #FileOUT.write(line)
+                    
+                    # record the informative reads?????????????????????????????????????
                     add2IRbag(rd1,data) 
                     ##########write informative reads to files.
                     if data[0] in PRTDNA:
-                        continue #skip the paired end reads which are completely mapped to TDNA
+                        continue  #skip the paired end reads which are completely mapped to TDNA
                     FileIR1.write("@"+rd1[0]+"/1\n")
                     FileIR1.write(rd1[9] + "\n+\n")
                     FileIR1.write(rd1[10]+"\n")
@@ -234,20 +221,45 @@ def captureIR_tdna(sfile_tdna,IR1,IR2,TDNAname): #?????????????????????????paral
                     FileIR2.write("@"+data[0]+"/2\n")
                     FileIR2.write(data[9] + "\n+\n")
                     FileIR2.write(data[10]+"\n")
+                    flag = False # renew the flag variable for next paired reads
                     del readbag[:]
                 else:
+                    continue
+            else:
+                if line.strip().find(TDNAname)>-1:
+                    #FileOUT.write(line)
+                    rd1 = read1.strip().split("\t")
+                    if int(data[4]) >= 20 or mapq1 >=20:
+                        add2IRbag(rd1,data) 
+                        ##########write informative reads to files.
+                        if data[0] in PRTDNA:
+                            continue #skip the paired end reads which are completely mapped to TDNA
+                        FileIR1.write("@"+rd1[0]+"/1\n")
+                        FileIR1.write(rd1[9] + "\n+\n")
+                        FileIR1.write(rd1[10]+"\n")
+                        read1 = ""
+                        FileIR2.write("@"+data[0]+"/2\n")
+                        FileIR2.write(data[9] + "\n+\n")
+                        FileIR2.write(data[10]+"\n")
+                        del readbag[:]
+                    else:
+                        continue
+                else:
                     reads1 = "" #renew the first read variable for next paired reads
+                    mapq1 = int
+                    del readbag[:]
 
         else:
             readbag.append(data[0])
             read1 = line #save the forward reads
+            mapq1 = int(data[4])
             if line.strip().find(TDNAname)>-1:
                 flag = True
                 
     FileIN.close()
     FileIR1.close()
     FileIR2.close()
-    FileOUT.close()
+    #FileOUT.close()
     
 # def split_list(a_list):
 #     a_list.sort()
@@ -343,8 +355,9 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
             data = line.strip().split("\t")
             if not IRbag.has_key(data[0]):
                 print "Warning: this read is not in the IR bag " + data[0]
-            # if int(data[4]) < 30:
-            #     continue
+            #here we only care about the read (one pair of the paired end reads) whether it contains information in pattern 1 or 2 or 3 below.
+            if int(data[4]) < 20:   
+                continue
             #if data[0] in INSbag:
             # 6 Cases
             # case a: ref 45M105S tdna 45S105M
@@ -607,7 +620,7 @@ if __name__ == '__main__':
     #thread = 8
     
     #init objects
-    pool = mp.Pool(thread)
+    pool = mp.Pool(thread)  ##big memory problem from https://stackoverflow.com/questions/14677287/multiprocessing-with-large-data
     
     
     filenames = glob.glob(tmp_dir +"/*.sam")
