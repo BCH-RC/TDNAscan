@@ -1,3 +1,7 @@
+# Citation
+Sun, Liang, et al. 
+["TDNAscan: A Software to Identify Complete and Truncated T-DNA Insertions."](https://www.frontiersin.org/articles/10.3389/fgene.2019.00685/abstract) Frontiers in Genetics (2019),doi: 10.3389/fgene.2019.00685
+
 # Installing TDNAscan 
 
 ## Operating System Requirements
