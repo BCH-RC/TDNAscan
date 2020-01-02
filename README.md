@@ -18,6 +18,7 @@ The following programs need to be installed and the executable commands should b
 
 
 # Using TDNAscan
+* Recommendation: trim your NGS reads using Trimmomatics or other NGS trimmer before using TDNAscan, otherwise, the final results will include some false positve insertions.
 
 ## Step 1 - Identify complete and truncated T-DNA insertions
   
