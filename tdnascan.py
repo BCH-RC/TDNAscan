@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/env python
 import os,sys,argparse,re,errno,time
 import glob
 import multiprocessing as mp
