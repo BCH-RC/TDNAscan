@@ -95,5 +95,5 @@ Annotated BED file (Step 2):
 
 # Contact
 
-* Dr. Liang Sun    (lsun@noble.org)
+* Dr. Liang Sun    (sunliang@udel.edu)
 * Yinbing  Ge  (yinge@noble.org)
