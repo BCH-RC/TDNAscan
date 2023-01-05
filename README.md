@@ -10,6 +10,8 @@ TDNAscan has been tested on the following Linux distributions:
 
 * Ubuntu 14.04 LTS
 * Ubuntu 16.04 LTS
+* Ubuntu 18.04 LTS
+* Ubuntu 20.04 LTS
 * CentOS 7.3
 * Debian 7 "Wheezy"
 * Debian 8 "Jessie"
