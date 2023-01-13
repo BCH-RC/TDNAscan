@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os,sys,argparse,re,errno,time
+import subprocess
 import glob
 import multiprocessing as mp
 
@@ -86,26 +87,27 @@ def align2genome(R1,R2,genome,outfile,thread,directory):
     cmd1 = "bwa index "+ genome
     cmd2 = "bwa mem -T 20 -t "+ str(thread) +" "+ genome + " " + R1 + " "+ R2 + " >"+outfile+".sam"
     #cmd2 = "bwa mem -t "+ str(thread) +" "+ genome + " " + R1 + " "+ R2 + " >"+outfile+".sam"    
-    #cmd3 = "samtools view -@  "+ str(thread) + " -buS -q 30 " + outfile+".sam |samtools sort -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
-    cmd3 = "samtools view -@  "+ str(thread) + " -buS " + outfile+".sam |samtools sort -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
+    #cmd3 = "samtools view -@  "+ str(thread) + " -buS -q 30 " + outfile+".sam |samtools sort -m 100M -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
+    cmd3 = "samtools view -@  "+ str(thread) + " -buS " + outfile+".sam |samtools sort -m 100M -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
     cmd4 = "samtools index " + outfile+"_sort.bam"
-    os.system(cmd0)
-    os.system(cmd1)
-    os.system(cmd2)
-    os.system(cmd3)
-    os.system(cmd4)
+    run(cmd0)
+    run(cmd1)
+    run(cmd2)
+    run(cmd3)
+    run(cmd4)
     
 def fileSplit(tdnaSAM,tmp_dir):
     cmd1 = "cp "+tdnaSAM+" "+tmp_dir
-    #print cmd1
+    #print(cmd1)
     tmp_sam = tmp_dir + "/" + os.path.basename(tdnaSAM)
-    cmd2 = "python FileSplitter.py "+ tmp_sam +" 10000"
-    #print cmd2
+    bindir = os.path.abspath(os.path.dirname(__file__))
+    cmd2 = os.path.join(bindir, "FileSplitter.py") + " "+ tmp_sam +" 10000"
+    #print(cmd2)
     
     cmd3 = "rm "+tmp_sam
-    os.system(cmd1)
-    os.system(cmd2)
-    os.system(cmd3)
+    run(cmd1)
+    run(cmd2)
+    run(cmd3)
 
 def filterSam(f):
     global TDNAname
@@ -157,12 +159,12 @@ def filterSam(f):
 def add2IRbag(rd1,data):
     global PRTDNA
     global IRbag
-    #print rd1
+    #print(rd1)
     IRbag[rd1[0]] = IR()
     IRbag[rd1[0]].id = rd1[0]
     IRbag[rd1[0]].chr = rd1[2]
     IRbag[rd1[0]].pos = int(rd1[3]) #need to modify the position based on the clipped case
-    #print "The data type for this R1"
+    #print("The data type for this R1")
     IRbag[rd1[0]].calulateCigar(rd1[5],"R1")
     
     #if read1 is informative, then continue, else, keep information of Read2
@@ -171,7 +173,7 @@ def add2IRbag(rd1,data):
         # IRbag[data[0]].id = data[0]
         # 
         # 
-        # #print "The data type for this R1"
+        # #print("The data type for this R1")
         # IRbag[data[0]].calulateCigar(data[5],"R2")
         # if IRbag[data[0]].type == "1_3": # Read1 and Read2 mapped to TDNA completely throw these reads out.
         if re.search("^(\d+)M$",data[5]):
@@ -284,7 +286,7 @@ def analyzeClust(clustbag):
     orientation_bag = []
     clr_n = 0
     dir_n = 0
-    #print "-----------------------------"
+    #print("-----------------------------")
     for (chr,start,readType,tdna_direction,tdna_pos,orientation) in clustbag:
         chromosome = chr
         #print (chr,start,readType,tdna_pos,orientation)
@@ -322,7 +324,7 @@ def analyzeClust(clustbag):
         
     # elif len(tdna_pos_bag) > 1:
     #     pos_mode = max(set(startPos_bag),key=startPos_bag.count)
-    #     #print tdna_pos_bag
+    #     #print(tdna_pos_bag)
     #     tdna_pos_st, tdna_pos_end = split_list(tdna_pos_bag)
     #     tdna_pos_st_mode = max(set(tdna_pos_st),key=tdna_pos_st.count)
     #     tdna_pos_end_mode = max(set(tdna_pos_end),key=tdna_pos_end.count)
@@ -355,8 +357,8 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
             if "@" in line:
                 continue
             data = line.strip().split("\t")
-            if not IRbag.has_key(data[0]):
-                print "Warning: this read is not in the IR bag " + data[0]
+            if not data[0] in IRbag:
+                print("Warning: this read is not in the IR bag " + data[0])
             #here we only care about the read (one pair of the paired end reads) whether it contains information in pattern 1 or 2 or 3 below.
             if int(data[4]) < 20:   
                 continue
@@ -404,13 +406,13 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
                         tmp_reads.write(line)
             elif m1_3:
                 #discordant reads, we need to guess the insertion location
-                #print data[0] + "-----------------------DIR"
+                #print(data[0] + "-----------------------DIR")
                 if IRbag[data[0]].type == "1_3" or IRbag[data[0]].type == "2_3":
                     pos = int(data[3]) + 250 #??????????????????????????????????assume the length of sequence fragment is 500bp
                     insertion.append((data[2],pos,"DIR","-","-","*"))
                     tmp_reads.write(line)
             else: #read the reverse read
-                #print "-----------------"+str(data)
+                #print("-----------------"+str(data))
                 continue
     
         win = int
@@ -431,7 +433,7 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
             elif readType == "DIR":
                 #win = 500
                 win = winDIR
-            #print "-------------windown size used:"+str(win)
+            #print("-------------windown size used:"+str(win))
             if not clustbag:
                 bag1 = (chr,start,readType,tdna_direction,tdna_pos,orientation)
                 clustbag.append((chr,start,readType,tdna_direction,tdna_pos,orientation))
@@ -479,7 +481,7 @@ def clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR):
             insertionbag.append(insertionTDNA)
         # #     FileOUT1.write(insertionTDNA[0]+"\t"+str(insertionTDNA[1])+"\t"+"\t".join(insertionTDNA[2:5])+"\n")
     tmp_reads.close()
-    #os.system("sort -k 3,3 -k 4,4n "+informativeGenome+"_IR.txt >"+informativeGenome+"_IR_sort.txt")
+    #run("sort -k 3,3 -k 4,4n "+informativeGenome+"_IR.txt >"+informativeGenome+"_IR_sort.txt")
     return insertionbag        
         # #extract sequences of insertion sites and put it into one file and align all reads to it and get the average read depth
         # for (chr,pos_mode,suppRead,tdna_info,orientation_mode) in insertionTDNA:
@@ -496,17 +498,17 @@ def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project):
         for (chr,pos_mode,suppRead,tdna_info,orientation_mode) in insertionbag:
             seq_region = seq_region + ' "'+chr+":" + str((pos_mode-seq_win))+"-" + str((pos_mode+seq_win))+ '"'
         cmd1 = 'samtools faidx '+reference+' '+seq_region+' >'+insertionSeq
-        #print cmd1
-        os.system(cmd1)
+        #print(cmd1)
+        run(cmd1)
         cmd2 = "bwa index "+insertionSeq
         cmd3 = "bwa mem -T 20 -t "+ str(thread) +" "+ insertionSeq + " " + fq1 + " "+ fq2 + " >"+outfile+".sam"
         #cmd4 = "samtools view -@  "+ str(thread) + " -buS -q 30 " + outfile+".sam |samtools sort -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
-        cmd4 = "samtools view -@  "+ str(thread) + " -buS " + outfile+".sam |samtools sort -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
+        cmd4 = "samtools view -@  "+ str(thread) + " -buS " + outfile+".sam |samtools sort -m 100M -@ "+ str(thread) + " - -O bam -o "+outfile+"_sort.bam"
         cmd5 = "samtools index "+outfile+"_sort.bam"
-        os.system(cmd2)
-        os.system(cmd3)
-        os.system(cmd4)
-        os.system(cmd5)
+        run(cmd2)
+        run(cmd3)
+        run(cmd4)
+        run(cmd5)
         for (chr,pos_mode,suppRead,tdna_info,orientation_mode) in insertionbag:
             
             clr_n = int(suppRead.split(",")[0].split(":")[1])
@@ -516,7 +518,7 @@ def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project):
             tmp_file = directory+ "/tmp.txt"
             #cmd6 = "samtools depth -r "+insertion_region+":"+ region + " " + outfile+"_sort.bam >"+tmp_file
             cmd6 = "samtools view " + outfile+"_sort.bam " +insertion_region+":"+ region + " >"+tmp_file
-            os.system(cmd6)
+            run(cmd6)
             spanread = 0
             freq = float
             with open(tmp_file) as tf:
@@ -529,21 +531,25 @@ def detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project):
                         pos = int(data[3])+match
                         if int(data[3]) <= (seq_win-5) and pos >= (seq_win+5):
                             spanread = spanread + 1
-                            #print line
+                            #print(line)
             if clr_n+spanread == 0:
                 freq = float(0)
             else:
                 freq = clr_n/float(clr_n+spanread)
-            #print freq
+            #print(freq)
             if clr_n == 0:
                 file_bed.write(chr+"\t~"+ str(pos_mode)+"\t"+suppRead+"\t"+tdna_info+"\t"+orientation_mode+"\t"+str(freq)+"\n")
             else:
                 file_bed.write(chr+"\t"+ str(pos_mode)+"\t"+suppRead+"\t"+tdna_info+"\t"+orientation_mode+"\t"+str(freq)+"\n")
             cmd7 = "rm "+tmp_file
-        #os.system(cmd7) #??????????????????????????????????????????
-                
-                    
-        
+        #run(cmd7) #??????????????????????????????????????????
+
+
+def run(command):
+    err = subprocess.call(command, shell=True)
+    if err:
+        print('Execution of "%s" failed!\n' % command)
+        sys.exit(1)
 
 
 #define parameter
@@ -579,7 +585,7 @@ if __name__ == '__main__':
     #python tdnascan.py -1 mt4_chr1_20x_mut_tdna_1.fq -2 mt4_chr1_20x_mut_tdna_2.fq -t t-dna_elison.fa -g mt4_chr1_2Mb.fa -p tdna
     tnd_len = 10000 #10kb ??????????????????????????????
     ##########################Step 1: map all reads to T-DNA sequence to generate a SAM file
-    print "Running the step1: map all reads to T-DNA sequence to generate a SAM file "
+    print("Running the step1: map all reads to T-DNA sequence to generate a SAM file ")
     #def align2genome(R1,R2,genome,outfile):
     #align2genome("mt4_chr1_20x_mut_tdna_1.fq","mt4_chr1_20x_mut_tdna_2.fq","t-dna_elison.fa","informativeTDNA")
     directory = "./" + project
@@ -599,7 +605,7 @@ if __name__ == '__main__':
     # align all reads to T-DNA sequence
     align2genome(fq1,fq2,tdna_seq,informativeTDNA,thread,directory)
     ##########################Step 2: capture all informative reads from SAM file from Step1
-    print "Running the step2: capture all informative reads from SAM file from Step1 "
+    print("Running the step2: capture all informative reads from SAM file from Step1 ")
     tdnaSAM = directory+ "/1.TDNA.sam"
     TDNAname = captureTDNAname(tdna_seq)
     #captureIR_tdna("tdna_sample.sam")
@@ -616,7 +622,7 @@ if __name__ == '__main__':
     fileSplit(tdnaSAM,tmp_dir)
     #filter out splitted sam file via parallel computing
     
-    print  "parallel Processing"
+    print("parallel Processing")
     start_time1 = time.time()
     
     #thread = 8
@@ -651,18 +657,18 @@ if __name__ == '__main__':
     captureIR_tdna(tdnaSAM_fix,informative_genome_r1,informative_genome_r2,TDNAname)
 
     # ##########################Step 3: map all informative reads to plant genome
-    print "Running the step3: map all informative reads to plant genome "
+    print("Running the step3: map all informative reads to plant genome ")
     informativeGenome = directory+ "/3."+project+"_informativeGenome"
     align2genome(informative_genome_r1, informative_genome_r2, reference,informativeGenome,thread,directory)
     ##########################Step 4: output all candidate insertion location and report the detail information of truncated T-DNA including how many base pairs truncated at both side of TDNA and the insertion direction
-    print "Running the step4:extract informative reads and cluster all informative reads based on location "
+    print("Running the step4:extract informative reads and cluster all informative reads based on location ")
     #clusterIR("informativeMt4.sam")
 
     insertionRead = directory+ "/4.insertionRead.txt"
     
     insertionbag = clusterIR(informativeGenome,insertionRead,minRD,winCLR,winDIR)
     
-    print "Running the step5: extract sequences blast all reads to them, and identify zygosity "
+    print("Running the step5: extract sequences blast all reads to them, and identify zygosity ")
     #extract reads using samtools
     
     detectZygosity(insertionbag,fq1,fq2,reference,thread,directory,project)

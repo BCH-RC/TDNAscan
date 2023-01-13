@@ -20,8 +20,7 @@ class FileSplitter:
         file_number = 1
         line_number = 1
 
-        print "Splitting %s into multiple files with %s lines" % (os.path.join(self.working_dir, self.file_base_name+self.file_ext), str(self.split_size
-))
+        print("Splitting %s into multiple files with %s lines" % (os.path.join(self.working_dir, self.file_base_name+self.file_ext), str(self.split_size)))
 
         out_file = self.get_new_file(file_number)
         for line in self.in_file:
@@ -35,13 +34,13 @@ class FileSplitter:
 
         out_file.close()
 
-        print "Created %s files." % (str(file_number))
+        print("Created %s files." % (str(file_number)))
 
     def get_new_file(self,file_number):
         """return a new file object ready to write to"""
         new_file_name = "%s.%s%s" % (self.file_base_name, str(file_number), self.file_ext)
         new_file_path = os.path.join(self.working_dir, new_file_name)
-        #print "creating file %s" % (new_file_path)
+        #print("creating file %s" % (new_file_path))
         return open(new_file_path, 'w')
 
     def parse_args(self,argv):
@@ -55,7 +54,7 @@ class FileSplitter:
             self.working_dir = os.getcwd()
             self.file_base_name, self.file_ext = os.path.splitext(self.file_name)
         except:
-            print self.usage()
+            print(self.usage())
             sys.exit(1)
 
     def usage(self):

@@ -36,7 +36,7 @@ def processGFF(file):
             data = line.strip().split("\t")
             if data[2] == "gene":
                 geneID = data[8].strip().split(";")[1].split("=")[1]
-                if geneInfo.has_key(data[0]):
+                if data[0] in geneInfo:
                     geneInfo[data[0]].append((int(data[3]),int(data[4]),geneID))
                 else:
                     geneInfo[data[0]] = [(int(data[3]),int(data[4]),geneID)]
@@ -59,14 +59,14 @@ def processVar(file):
 def annotateVar(varInfo,geneInfo):  
     geneAnnot = {}
     for chr,start,end in varInfo:
-        #print chr,start,end
+        #print(chr,start,end)
         flag = 0
-        if not geneInfo.has_key(chr):
+        if not chr in geneInfo:
             geneAnnot[(chr,start,end)] =[]
             continue
         for s,e,id  in geneInfo[chr]:
             if (start>= s and start <= e) or (end>=s and end <= e):
-                if geneAnnot.has_key((chr,start,end)):
+                if (chr,start,end) in geneAnnot:
                     geneAnnot[(chr,start,end)].append(id)
                 else:
                     flag = 1
@@ -106,7 +106,7 @@ ofile = args.ofile
 
 
 if len(sys.argv) == 1:
-	print parser.print_help()
+	print(parser.print_help())
 	sys.exit("error: give me your input and output files!")
 
 ############################# read AF files #############################
@@ -114,7 +114,7 @@ else :
     geneInfo = processGFF(ffile)
     varInfo = processVar(ifile)
     geneAnnot = annotateVar(varInfo,geneInfo)
-    #print geneAnnot
+    #print(geneAnnot)
 
 ############################# write unique variance to output file #############################
 FileOUT = open(ofile,"w")
@@ -126,4 +126,4 @@ FileOUT.close()
 
 t1 = time.time()
 totalTime = t1-t0
-print "Run time: " + str(totalTime) + "sec"
+print("Run time: " + str(totalTime) + "sec")

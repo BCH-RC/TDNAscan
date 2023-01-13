@@ -10,6 +10,8 @@ TDNAscan has been tested on the following Linux distributions:
 
 * Ubuntu 14.04 LTS
 * Ubuntu 16.04 LTS
+* Ubuntu 18.04 LTS
+* Ubuntu 20.04 LTS
 * CentOS 7.3
 * Debian 7 "Wheezy"
 * Debian 8 "Jessie"
@@ -18,7 +20,7 @@ TDNAscan has been tested on the following Linux distributions:
 The following programs need to be installed and the executable commands should be in $PATH of system.
 * BWA (Version ="0.7.12")
 * Samtools (Version ="1.3.1")
-* Python (Version ="2.7.5")
+* Python (Version at least 3.6.x)
 
 
 # Using TDNAscan
