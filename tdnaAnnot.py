@@ -30,7 +30,7 @@ def processGFF(file):
     geneInfo = {} # chr = [start, end, geneID]
     FileIN = open(file,"rU")
     for line in FileIN:
-        if "##" in line:
+        if line[0] == "#":
             continue
         else:
             data = line.strip().split("\t")
