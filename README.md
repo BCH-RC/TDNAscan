@@ -94,6 +94,22 @@ Annotated BED file (Step 2):
 * Freq: Insertion frequency;
 * Genes (optional): This column will only show genes if deletions cover.
 
+# Using Docker
+## We also provide an docker image for TDNAscan supporting Linux AMD64 platform
+### To run docker image on an amd64 platform (most Linux, Windows, or Intel-based Mac) with example data in a folder ./example/
+```
+docker run --platform linux/amd64 -v /path/to/your/working/directory:/workspace -w /workspace rcbioinfo/tdnascan:amd64 python /app/tdnascan.py -1 ./example/mt4_chr1_20x_mut_tdna_1.fq -2 ./example/mt4_chr1_20x_mut_tdna_2.fq -t ./example/t-dna_elison.fa -g ./example/mt4_chr1_2Mb.fa -p tdna
+docker run --platform linux/amd64 -v /path/to/your/working/directory:/workspace -w /workspace rcbioinfo/tdnascan:amd64 python /app/tdnaAnnot.py -i ./tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/5.tdna_insertion_annot.bed
+```
+
+## If you do not have root access, such as on HPC clusters, you can run singularity
+### First, obtain the image from docker hub:
+`singularity pull docker://rcbioinfo/tdnascan:amd64`
+### Then singularity container can be run with
+```
+singularity run -B /path/to/your/working/directory tdnascan_amd64.sif python /app/tdnascan.py -1 ./example/mt4_chr1_20x_mut_tdna_1.fq -2 ./example/mt4_chr1_20x_mut_tdna_2.fq -t ./example/t-dna_elison.fa -g ./example/mt4_chr1_2Mb.fa -p tdna
+singularity run -B /path/to/your/working/directory tdnascan_amd64.sif python /app/tdnaAnnot.py -i ./tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/5.tdna_insertion_annot.bed
+```
 
 # Contact
 
