@@ -3,6 +3,9 @@ Sun, Liang, et al.
 ["TDNAscan: A Software to Identify Complete and Truncated T-DNA Insertions."](https://www.frontiersin.org/articles/10.3389/fgene.2019.00685/abstract) Frontiers in Genetics (2019),doi: 10.3389/fgene.2019.00685
 
 # Installing TDNAscan 
+TDNAscan can be easily downloaded and run on the command line using files in this repository.
+
+Additionally, we provide an docker image for TDNAscan supporting Linux AMD64 platform. See [Using Docker](#using-docker) for details.
 
 ## Operating System Requirements
 
@@ -95,17 +98,16 @@ Annotated BED file (Step 2):
 * Genes (optional): This column will only show genes if deletions cover.
 
 # Using Docker
-## We also provide an docker image for TDNAscan supporting Linux AMD64 platform
-### To run docker image on an amd64 platform (most Linux, Windows, or Intel-based Mac) with example data in a folder ./example/
+### To run docker image on an amd64 platform (most Linux, Windows, or Intel-based Mac) with example data in a folder named ./example/
 ```
 docker run --platform linux/amd64 -v /path/to/your/working/directory:/workspace -w /workspace rcbioinfo/tdnascan:amd64 python /app/tdnascan.py -1 ./example/mt4_chr1_20x_mut_tdna_1.fq -2 ./example/mt4_chr1_20x_mut_tdna_2.fq -t ./example/t-dna_elison.fa -g ./example/mt4_chr1_2Mb.fa -p tdna
 docker run --platform linux/amd64 -v /path/to/your/working/directory:/workspace -w /workspace rcbioinfo/tdnascan:amd64 python /app/tdnaAnnot.py -i ./tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/5.tdna_insertion_annot.bed
 ```
 
-## If you do not have root access, such as on HPC clusters, you can run singularity
-### First, obtain the image from docker hub:
+## If you do not have root access, such as on HPC clusters, you can run singularity instead
+### First, obtain the image from docker hub
 `singularity pull docker://rcbioinfo/tdnascan:amd64`
-### Then singularity container can be run with
+### Next, run singularity with
 ```
 singularity run -B /path/to/your/working/directory tdnascan_amd64.sif python /app/tdnascan.py -1 ./example/mt4_chr1_20x_mut_tdna_1.fq -2 ./example/mt4_chr1_20x_mut_tdna_2.fq -t ./example/t-dna_elison.fa -g ./example/mt4_chr1_2Mb.fa -p tdna
 singularity run -B /path/to/your/working/directory tdnascan_amd64.sif python /app/tdnaAnnot.py -i ./tdna/5.tdna_insertion.bed -f Athaliana_447_Araport11.gene.gff3 -o ./tdna/5.tdna_insertion_annot.bed
